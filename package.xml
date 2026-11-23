@@ -15,6 +15,12 @@
   <depend>ssc32</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>control_msgs</test_depend>
+  <test_depend>controller_manager</test_depend>
+  <test_depend>controller_manager_msgs</test_depend>
+  <test_depend>joint_trajectory_controller</test_depend>
+  <test_depend>rclcpp_action</test_depend>
+  <test_depend>trajectory_msgs</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

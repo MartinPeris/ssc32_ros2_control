@@ -9,9 +9,11 @@ standalone [ssc32](https://github.com/MartinPeris/ssc32) C++ library.
 
 ## Status
 
-Configuration parsing, calibration conversion, command batching, and the real
-POSIX serial path are covered by automated tests on ROS 2 Lyrical. Physical
-controller and servo validation is pending.
+Configuration parsing, calibration conversion, command batching, communication
+failures, and the real POSIX serial path are covered by automated tests on ROS 2
+Lyrical. A controller-manager integration test executes a standard
+`FollowJointTrajectory` action through the plugin and a stateful SSC-32
+emulator. Physical controller and servo validation is pending.
 
 ## Design
 
@@ -26,6 +28,7 @@ timed moves. An optional per-joint SSC-32 speed value provides a separate pulse
 slew-rate ceiling.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for lifecycle and failure behavior.
+See [TESTING.md](TESTING.md) for test boundaries and the serial timing envelope.
 
 ## Feedback limitation
 

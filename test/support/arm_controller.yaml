@@ -1,0 +1,19 @@
+arm_controller:
+  ros__parameters:
+    joints:
+      - base_joint
+      - shoulder_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+    allow_partial_joints_goal: false
+    action_monitor_rate: 20.0
+    constraints:
+      goal_time: 1.0
+      base_joint:
+        trajectory: 0.05
+        goal: 0.005
+      shoulder_joint:
+        trajectory: 0.05
+        goal: 0.005

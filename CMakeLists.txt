@@ -48,7 +48,7 @@ install(TARGETS ssc32_ros2_control
 )
 install(DIRECTORY include/ DESTINATION include)
 install(DIRECTORY config urdf DESTINATION share/${PROJECT_NAME})
-install(FILES README.md ARCHITECTURE.md ssc32.repos DESTINATION share/${PROJECT_NAME})
+install(FILES README.md ARCHITECTURE.md TESTING.md ssc32.repos DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
@@ -73,6 +73,17 @@ if(BUILD_TESTING)
   ssc32_ros2_control_enable_warnings(test_plugin)
 
   if(UNIX)
+    find_package(control_msgs REQUIRED)
+    find_package(controller_manager REQUIRED)
+    find_package(controller_manager_msgs REQUIRED)
+    find_package(rclcpp_action REQUIRED)
+    find_package(trajectory_msgs REQUIRED)
+
+    add_library(ssc32_test_emulator STATIC test/support/ssc32_emulator.cpp)
+    target_compile_features(ssc32_test_emulator PUBLIC cxx_std_17)
+    target_include_directories(ssc32_test_emulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/test)
+    ssc32_ros2_control_enable_warnings(ssc32_test_emulator)
+
     ament_add_gtest(test_pty test/test_pty.cpp)
     target_link_libraries(test_pty ssc32_ros2_control)
     ssc32_ros2_control_enable_warnings(test_pty)
@@ -85,8 +96,25 @@ if(BUILD_TESTING)
       hardware_interface::hardware_interface
       rclcpp::rclcpp
       ssc32_ros2_control
+      ssc32_test_emulator
     )
     ssc32_ros2_control_enable_warnings(test_system_pty)
+
+    ament_add_gtest(test_controller_manager test/test_controller_manager.cpp)
+    target_compile_definitions(test_controller_manager PRIVATE
+      SSC32_ROS2_CONTROL_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+    target_link_libraries(test_controller_manager
+      control_msgs::control_msgs
+      controller_manager::controller_manager
+      controller_manager_msgs::controller_manager_msgs
+      rclcpp::rclcpp
+      rclcpp_action::rclcpp_action
+      ssc32_ros2_control
+      ssc32_test_emulator
+      trajectory_msgs::trajectory_msgs
+    )
+    ssc32_ros2_control_enable_warnings(test_controller_manager)
   endif()
 endif()
 

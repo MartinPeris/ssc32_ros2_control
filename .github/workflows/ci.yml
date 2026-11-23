@@ -41,7 +41,8 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
             clang \
             ros-lyrical-ament-cmake-gtest \
-            ros-lyrical-ros2-control
+            ros-lyrical-ros2-control \
+            ros-lyrical-ros2-controllers
       - name: Build ssc32
         shell: bash
         run: |
@@ -85,7 +86,8 @@ jobs:
           apt-get update -qq
           DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
             ros-lyrical-ament-cmake-gtest \
-            ros-lyrical-ros2-control
+            ros-lyrical-ros2-control \
+            ros-lyrical-ros2-controllers
       - name: Build with sanitizers
         shell: bash
         run: |

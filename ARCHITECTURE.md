@@ -40,3 +40,11 @@ after an unknown failure.
 The SSC-32 continues generating its last pulse after host failure. A physical
 power cutoff remains the only dependable stop for electrical or mechanical
 faults.
+
+## Verification boundary
+
+The test emulator models SSC-32 protocol state and deterministic transport
+faults. The highest-level test loads the production hardware plugin into a real
+controller manager, activates the standard trajectory controller, submits a
+`FollowJointTrajectory` action, and observes the serial wire commands. This
+proves the software integration without claiming servo-physics fidelity.
