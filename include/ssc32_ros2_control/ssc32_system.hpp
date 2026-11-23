@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 
-#include <chrono>
-#include <cstdint>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "hardware_interface/system_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+#include "ssc32_ros2_control/configuration.hpp"
+#include "ssc32_ros2_control/diagnostics.hpp"
 #include "ssc32_ros2_control/driver.hpp"
 
 namespace ssc32_ros2_control {
@@ -39,11 +38,9 @@ class Ssc32System final : public hardware_interface::SystemInterface {
   [[nodiscard]] bool synchronize_interfaces();
   void cancel_and_reset() noexcept;
 
-  std::string device_;
-  unsigned int baud_rate_{115200U};
-  std::chrono::milliseconds timeout_{250};
-  std::vector<JointCalibration> calibrations_;
+  HardwareConfiguration configuration_;
   std::unique_ptr<Driver> driver_;
+  std::unique_ptr<Diagnostics> diagnostics_;
 };
 
 }  // namespace ssc32_ros2_control

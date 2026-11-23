@@ -65,7 +65,7 @@ std::vector<double> Driver::read_positions() {
   return positions;
 }
 
-void Driver::write_positions(const std::vector<double>& positions) {
+bool Driver::write_positions(const std::vector<double>& positions) {
   if (positions.size() != calibrations_.size()) {
     throw std::invalid_argument("position count does not match configured joints");
   }
@@ -76,7 +76,7 @@ void Driver::write_positions(const std::vector<double>& positions) {
     pulses.push_back(calibrations_[index].position_to_pulse(positions[index]));
   }
   if (pulses == last_commanded_pulses_) {
-    return;
+    return false;
   }
 
   std::vector<ssc32::ServoCommand> commands;
@@ -92,6 +92,7 @@ void Driver::write_positions(const std::vector<double>& positions) {
   }
   controller_.move(commands);
   last_commanded_pulses_ = std::move(pulses);
+  return true;
 }
 
 void Driver::cancel() { controller_.cancel(); }

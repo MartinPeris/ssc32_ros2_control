@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(ssc32_ros2_control VERSION 0.1.0 LANGUAGES CXX)
+project(ssc32_ros2_control VERSION 0.2.0 LANGUAGES CXX)
 
 find_package(ament_cmake REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -12,7 +14,10 @@ find_package(ssc32 CONFIG REQUIRED)
 option(SSC32_ROS2_CONTROL_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
 add_library(ssc32_ros2_control SHARED
+  src/configuration.cpp
+  src/diagnostics.cpp
   src/driver.cpp
+  src/inspection.cpp
   src/joint_calibration.cpp
   src/ssc32_system.cpp
 )
@@ -22,11 +27,20 @@ target_include_directories(ssc32_ros2_control PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(ssc32_ros2_control PUBLIC
+  diagnostic_msgs::diagnostic_msgs
+  diagnostic_updater::diagnostic_updater
   hardware_interface::hardware_interface
   pluginlib::pluginlib
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   ssc32::ssc32
+)
+
+add_executable(ssc32_config_inspect src/config_inspect_main.cpp)
+target_compile_features(ssc32_config_inspect PRIVATE cxx_std_17)
+target_link_libraries(ssc32_config_inspect PRIVATE
+  hardware_interface::hardware_interface
+  ssc32_ros2_control
 )
 
 function(ssc32_ros2_control_enable_warnings target)
@@ -39,6 +53,7 @@ function(ssc32_ros2_control_enable_warnings target)
 endfunction()
 
 ssc32_ros2_control_enable_warnings(ssc32_ros2_control)
+ssc32_ros2_control_enable_warnings(ssc32_config_inspect)
 pluginlib_export_plugin_description_file(hardware_interface ssc32_ros2_control.xml)
 
 install(TARGETS ssc32_ros2_control
@@ -46,6 +61,7 @@ install(TARGETS ssc32_ros2_control
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+install(TARGETS ssc32_config_inspect RUNTIME DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include)
 install(DIRECTORY config urdf DESTINATION share/${PROJECT_NAME})
 install(FILES README.md ARCHITECTURE.md TESTING.md ssc32.repos DESTINATION share/${PROJECT_NAME})
@@ -60,6 +76,24 @@ if(BUILD_TESTING)
   ament_add_gtest(test_driver test/test_driver.cpp)
   target_link_libraries(test_driver ssc32_ros2_control)
   ssc32_ros2_control_enable_warnings(test_driver)
+
+  ament_add_gtest(test_configuration test/test_configuration.cpp)
+  target_compile_definitions(test_configuration PRIVATE
+    SSC32_ROS2_CONTROL_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+  target_link_libraries(test_configuration
+    hardware_interface::hardware_interface
+    ssc32_ros2_control
+  )
+  ssc32_ros2_control_enable_warnings(test_configuration)
+
+  ament_add_gtest(test_diagnostics test/test_diagnostics.cpp)
+  target_link_libraries(test_diagnostics
+    diagnostic_msgs::diagnostic_msgs
+    rclcpp::rclcpp
+    ssc32_ros2_control
+  )
+  ssc32_ros2_control_enable_warnings(test_diagnostics)
 
   ament_add_gtest(test_plugin test/test_plugin.cpp)
   target_compile_definitions(test_plugin PRIVATE
@@ -120,5 +154,13 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(ssc32_ros2_control)
-ament_export_dependencies(hardware_interface pluginlib rclcpp rclcpp_lifecycle ssc32)
+ament_export_dependencies(
+  diagnostic_msgs
+  diagnostic_updater
+  hardware_interface
+  pluginlib
+  rclcpp
+  rclcpp_lifecycle
+  ssc32
+)
 ament_package()

@@ -3,8 +3,11 @@
 ## Boundaries
 
 - `ssc32`: protocol encoding, bounded serial transport, and controller queries.
+- `HardwareConfiguration`: the single parser used by the plugin and inspection
+  tool.
 - `Driver`: calibrated SI-position/pulse conversion and atomic command batching.
 - `Ssc32System`: ros2_control lifecycle and position command/state interfaces.
+- `Diagnostics`: timer-driven standard ROS diagnostics over atomic snapshots.
 - Standard ROS controllers: trajectory interpolation, action handling, and joint
   state publication.
 
@@ -29,6 +32,13 @@ No SSC-32 command encoder is duplicated in this package.
 USB serial is not deterministic. Configure this component with Lyrical's
 `is_async="true"` and an explicit `rw_rate`, normally 50 Hz, so serial latency
 does not stall the controller manager's primary loop.
+
+Diagnostics are published by `diagnostic_updater` on the hardware component's
+ROS node, normally at 1 Hz. Successful read/write paths update only counters and
+timestamps; they do not publish, allocate diagnostic messages, or take the
+diagnostic detail mutex. The timer callback formats a bounded snapshot outside
+the control loop. Error paths may store the exception text because they are
+already non-nominal.
 
 ## Failure behavior
 

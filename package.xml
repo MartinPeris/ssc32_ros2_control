@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>ssc32_ros2_control</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <description>ros2_control hardware interface for Lynxmotion SSC-32 servo controllers.</description>
   <maintainer email="MartinPeris@users.noreply.github.com">Martin Peris</maintainer>
   <license>BSD-3-Clause</license>
@@ -9,6 +9,8 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>hardware_interface</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>diagnostic_updater</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>

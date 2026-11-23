@@ -74,11 +74,11 @@ TEST(Driver, IdentifiesSynchronizesAndBatchesCommands) {
   EXPECT_EQ(fake->writes[0], "VER\r");
   EXPECT_EQ(fake->writes[1], "QP0QP1\r");
 
-  driver.write_positions({0.1, -0.2});
+  EXPECT_TRUE(driver.write_positions({0.1, -0.2}));
   ASSERT_EQ(fake->writes.size(), 3U);
   EXPECT_EQ(fake->writes[2], "#0 P1550 S200 #1 P1600 S300 \r");
 
-  driver.write_positions({0.1, -0.2});
+  EXPECT_FALSE(driver.write_positions({0.1, -0.2}));
   EXPECT_EQ(fake->writes.size(), 3U);
 }
 
@@ -86,7 +86,7 @@ TEST(Driver, ValidatesPositionCountBeforeWriting) {
   auto transport = std::make_unique<FakeTransport>();
   ssc32_ros2_control::Driver driver(std::move(transport), calibrations(),
                                     std::chrono::milliseconds(100));
-  EXPECT_THROW(driver.write_positions({0.0}), std::invalid_argument);
+  EXPECT_THROW(static_cast<void>(driver.write_positions({0.0})), std::invalid_argument);
 }
 
 }  // namespace

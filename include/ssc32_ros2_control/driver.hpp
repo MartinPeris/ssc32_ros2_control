@@ -20,7 +20,7 @@ class Driver final {
   [[nodiscard]] std::string version();
   [[nodiscard]] std::vector<double> synchronize();
   [[nodiscard]] std::vector<double> read_positions();
-  void write_positions(const std::vector<double>& positions);
+  [[nodiscard]] bool write_positions(const std::vector<double>& positions);
   void cancel();
 
  private:

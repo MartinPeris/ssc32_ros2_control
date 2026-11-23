@@ -15,6 +15,10 @@ likely to hide integration defects.
 5. The controller-manager test loads the plugin and the standard
    `joint_trajectory_controller`, sends a `FollowJointTrajectory` action, runs
    the control loop, and verifies the resulting multi-channel SSC-32 traffic.
+6. Configuration tests prove that the plugin and inspection tool share one
+   parser, including multi-board selection and JSON/text rendering.
+7. Diagnostic tests exercise lifecycle levels, stale detection, counters,
+   errors, and actual publication on `/diagnostics`.
 
 The pseudoterminal emulator is a stateful model of the protocol boundary, not a
 servo-physics model. It updates generated pulse outputs when it accepts a move

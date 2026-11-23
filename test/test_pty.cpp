@@ -43,7 +43,7 @@ TEST(PtyIntegration, UsesRealSerialTransport) {
   ASSERT_EQ(positions.size(), 2U);
   EXPECT_DOUBLE_EQ(positions[0], 0.0);
   EXPECT_DOUBLE_EQ(positions[1], -0.2);
-  driver.write_positions({0.1, -0.2});
+  EXPECT_TRUE(driver.write_positions({0.1, -0.2}));
   driver.cancel();
 
   ASSERT_TRUE(emulator.wait_for_move_count(1U, std::chrono::seconds(1)));
