@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<robot name="ssc32_example">
+  <link name="base_link"/>
+  <link name="link_1"/>
+  <link name="link_2"/>
+
+  <joint name="base_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="link_1"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.2" upper="0.2" effort="1" velocity="0.2"/>
+  </joint>
+  <joint name="shoulder_joint" type="revolute">
+    <parent link="link_1"/>
+    <child link="link_2"/>
+    <origin xyz="0 0 0.1"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-0.1" upper="0.1" effort="1" velocity="0.1"/>
+  </joint>
+
+  <ros2_control name="ssc32_example" type="system" is_async="true" rw_rate="50">
+    <hardware>
+      <plugin>ssc32_ros2_control/Ssc32System</plugin>
+      <param name="device">/dev/ttyUSB0</param>
+      <param name="baud_rate">115200</param>
+      <param name="timeout_ms">250</param>
+    </hardware>
+
+    <joint name="base_joint">
+      <param name="channel">0</param>
+      <param name="zero_pulse_us">1500</param>
+      <param name="pulse_us_per_unit">500</param>
+      <param name="direction">1</param>
+      <param name="min_pulse_us">1400</param>
+      <param name="max_pulse_us">1600</param>
+      <param name="max_speed_us_per_second">100</param>
+      <command_interface name="position">
+        <param name="min">-0.2</param>
+        <param name="max">0.2</param>
+      </command_interface>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="shoulder_joint">
+      <param name="channel">1</param>
+      <param name="zero_pulse_us">1500</param>
+      <param name="pulse_us_per_unit">500</param>
+      <param name="direction">-1</param>
+      <param name="min_pulse_us">1450</param>
+      <param name="max_pulse_us">1550</param>
+      <param name="max_speed_us_per_second">75</param>
+      <command_interface name="position">
+        <param name="min">-0.1</param>
+        <param name="max">0.1</param>
+      </command_interface>
+      <state_interface name="position"/>
+    </joint>
+  </ros2_control>
+</robot>

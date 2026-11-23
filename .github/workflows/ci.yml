@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Lyrical · ${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    container: ros:lyrical-ros-base
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: src/ssc32_ros2_control
+      - uses: actions/checkout@v5
+        with:
+          repository: MartinPeris/ssc32
+          ref: 2d3004df425c1eddc0084e7f1e40ebdc3fa29836
+          path: src/ssc32
+      - name: Install ROS dependencies
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            clang \
+            ros-lyrical-ament-cmake-gtest \
+            ros-lyrical-ros2-control
+      - name: Build ssc32
+        shell: bash
+        run: |
+          source /opt/ros/lyrical/setup.bash
+          colcon build --packages-select ssc32 \
+            --cmake-args -DSSC32_WARNINGS_AS_ERRORS=ON
+      - name: Build hardware plugin
+        shell: bash
+        run: |
+          source /opt/ros/lyrical/setup.bash
+          source install/setup.bash
+          colcon build --packages-select ssc32_ros2_control \
+            --cmake-args -DSSC32_ROS2_CONTROL_WARNINGS_AS_ERRORS=ON
+      - name: Test
+        shell: bash
+        run: |
+          source /opt/ros/lyrical/setup.bash
+          source install/setup.bash
+          colcon test --packages-select ssc32 ssc32_ros2_control \
+            --event-handlers console_direct+
+          colcon test-result --verbose
+
+  sanitizers:
+    name: Lyrical · ASan + UBSan
+    runs-on: ubuntu-latest
+    container: ros:lyrical-ros-base
+    env:
+      CC: gcc
+      CXX: g++
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: src/ssc32_ros2_control
+      - uses: actions/checkout@v5
+        with:
+          repository: MartinPeris/ssc32
+          ref: 2d3004df425c1eddc0084e7f1e40ebdc3fa29836
+          path: src/ssc32
+      - name: Install ROS dependencies
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            ros-lyrical-ament-cmake-gtest \
+            ros-lyrical-ros2-control
+      - name: Build with sanitizers
+        shell: bash
+        run: |
+          source /opt/ros/lyrical/setup.bash
+          colcon build --packages-select ssc32 \
+            --cmake-args \
+              -DSSC32_WARNINGS_AS_ERRORS=ON \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+          source install/setup.bash
+          colcon build --packages-select ssc32_ros2_control \
+            --cmake-args \
+              -DSSC32_ROS2_CONTROL_WARNINGS_AS_ERRORS=ON \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+      - name: Test with sanitizers
+        shell: bash
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: |
+          source /opt/ros/lyrical/setup.bash
+          source install/setup.bash
+          colcon test --packages-select ssc32 ssc32_ros2_control \
+            --event-handlers console_direct+
+          colcon test-result --verbose

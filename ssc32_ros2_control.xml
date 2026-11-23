@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<library path="ssc32_ros2_control">
+  <class
+    name="ssc32_ros2_control/Ssc32System"
+    type="ssc32_ros2_control::Ssc32System"
+    base_class_type="hardware_interface::SystemInterface">
+    <description>Position-only ros2_control system for a Lynxmotion SSC-32 controller.</description>
+  </class>
+</library>

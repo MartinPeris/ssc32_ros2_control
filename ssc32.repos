@@ -1,0 +1,5 @@
+repositories:
+  ssc32:
+    type: git
+    url: https://github.com/MartinPeris/ssc32.git
+    version: 2d3004df425c1eddc0084e7f1e40ebdc3fa29836
