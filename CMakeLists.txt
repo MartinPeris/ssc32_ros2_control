@@ -87,6 +87,12 @@ if(BUILD_TESTING)
   )
   ssc32_ros2_control_enable_warnings(test_configuration)
 
+  add_test(
+    NAME test_config_inspect_cli
+    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/test/config_inspect_cli.sh
+            $<TARGET_FILE:ssc32_config_inspect> ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+
   ament_add_gtest(test_diagnostics test/test_diagnostics.cpp)
   target_link_libraries(test_diagnostics
     diagnostic_msgs::diagnostic_msgs

@@ -121,4 +121,35 @@ TEST(Diagnostics, PublishesOnStandardDiagnosticsTopic) {
   static_cast<void>(subscription);
 }
 
+TEST(Diagnostics, CoversInactiveSuppressedAndConnectionStatesWithoutNode) {
+  ssc32_ros2_control::Diagnostics diagnostics(nullptr, configuration());
+  diagnostic_updater::DiagnosticStatusWrapper status;
+
+  diagnostics.mark_configured("");
+  diagnostics.report(status);
+  EXPECT_EQ(status.level, diagnostic_msgs::msg::DiagnosticStatus::OK);
+  EXPECT_EQ(value(status, "firmware"), "unknown");
+
+  diagnostics.mark_active();
+  status.values.clear();
+  diagnostics.report(status);
+  EXPECT_EQ(status.level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
+
+  diagnostics.record_write_success(3ms, false);
+  diagnostics.record_error("write", "write failed");
+  diagnostics.ensure_error("connect", "must not replace existing error");
+  diagnostics.mark_inactive();
+  status.values.clear();
+  diagnostics.report(status);
+  EXPECT_EQ(status.level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
+  EXPECT_EQ(value(status, "suppressed_writes"), "1");
+  EXPECT_EQ(value(status, "write_errors"), "1");
+
+  diagnostics.mark_unconfigured();
+  diagnostics.ensure_error("connect", "connection failed");
+  status.values.clear();
+  diagnostics.report(status);
+  EXPECT_EQ(value(status, "connection_errors"), "1");
+}
+
 }  // namespace

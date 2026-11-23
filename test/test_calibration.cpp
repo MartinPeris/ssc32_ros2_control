@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <stdexcept>
 
 #include "ssc32_ros2_control/joint_calibration.hpp"
@@ -51,6 +52,33 @@ TEST(JointCalibration, RejectsReportedPulseOutsidePositionLimits) {
   value.max_position = 0.5;
   value.validate();
   EXPECT_THROW(static_cast<void>(value.pulse_to_position(1000U)), std::out_of_range);
+}
+
+TEST(JointCalibration, RejectsEveryInvalidCalibrationField) {
+  auto value = calibration();
+  value.name.clear();
+  EXPECT_THROW(value.validate(), std::invalid_argument);
+  value = calibration();
+  value.channel = 32U;
+  EXPECT_THROW(value.validate(), std::invalid_argument);
+  value = calibration();
+  value.pulse_us_per_unit = std::numeric_limits<double>::quiet_NaN();
+  EXPECT_THROW(value.validate(), std::invalid_argument);
+  value = calibration();
+  value.min_pulse_us = 499U;
+  EXPECT_THROW(value.validate(), std::invalid_argument);
+  value = calibration();
+  value.zero_pulse_us = 999U;
+  EXPECT_THROW(value.validate(), std::invalid_argument);
+  value = calibration();
+  value.min_position = value.max_position;
+  EXPECT_THROW(value.validate(), std::invalid_argument);
+}
+
+TEST(JointCalibration, RejectsNonFinitePosition) {
+  const auto value = calibration();
+  EXPECT_THROW(static_cast<void>(value.position_to_pulse(std::numeric_limits<double>::infinity())),
+               std::out_of_range);
 }
 
 }  // namespace

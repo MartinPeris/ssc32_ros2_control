@@ -21,7 +21,7 @@ class FakeTransport final : public ssc32::Transport {
   void write_all(const std::string_view data) override { writes.emplace_back(data); }
 
   std::vector<std::uint8_t> read_exact(std::size_t size, std::chrono::milliseconds) override {
-    if (exact_responses.empty() || exact_responses.front().size() != size) {
+    if (exact_responses.empty() || (enforce_exact_size && exact_responses.front().size() != size)) {
       throw std::runtime_error("unexpected exact read");
     }
     auto response = std::move(exact_responses.front());
@@ -35,6 +35,7 @@ class FakeTransport final : public ssc32::Transport {
 
   std::vector<std::string> writes;
   std::deque<std::vector<std::uint8_t>> exact_responses;
+  bool enforce_exact_size{true};
 };
 
 std::vector<ssc32_ros2_control::JointCalibration> calibrations() {
@@ -87,6 +88,41 @@ TEST(Driver, ValidatesPositionCountBeforeWriting) {
   ssc32_ros2_control::Driver driver(std::move(transport), calibrations(),
                                     std::chrono::milliseconds(100));
   EXPECT_THROW(static_cast<void>(driver.write_positions({0.0})), std::invalid_argument);
+}
+
+TEST(Driver, RejectsInvalidConstructionAndPulseCounts) {
+  EXPECT_THROW(static_cast<void>(ssc32_ros2_control::Driver(nullptr, calibrations(),
+                                                            std::chrono::milliseconds(100))),
+               std::invalid_argument);
+  EXPECT_THROW(static_cast<void>(ssc32_ros2_control::Driver(std::make_unique<FakeTransport>(), {},
+                                                            std::chrono::milliseconds(100))),
+               std::invalid_argument);
+  EXPECT_THROW(
+      static_cast<void>(ssc32_ros2_control::Driver(std::make_unique<FakeTransport>(),
+                                                   calibrations(), std::chrono::milliseconds(0))),
+      std::invalid_argument);
+
+  auto transport = std::make_unique<FakeTransport>();
+  auto* fake = transport.get();
+  fake->enforce_exact_size = false;
+  fake->exact_responses.push_back({150U});
+  ssc32_ros2_control::Driver driver(std::move(transport), calibrations(),
+                                    std::chrono::milliseconds(100));
+  EXPECT_THROW(static_cast<void>(driver.read_positions()), std::runtime_error);
+}
+
+TEST(Driver, OmitsOptionalSpeedAndCancels) {
+  auto values = calibrations();
+  values.front().max_speed_us_per_second = 0U;
+  auto transport = std::make_unique<FakeTransport>();
+  auto* fake = transport.get();
+  ssc32_ros2_control::Driver driver(std::move(transport), std::move(values),
+                                    std::chrono::milliseconds(100));
+  EXPECT_TRUE(driver.write_positions({0.1, -0.2}));
+  ASSERT_EQ(fake->writes.size(), 1U);
+  EXPECT_EQ(fake->writes.front(), "#0 P1550 #1 P1600 S300 \r");
+  driver.cancel();
+  EXPECT_EQ(fake->writes.back(), std::string("\x1B\r", 2U));
 }
 
 }  // namespace

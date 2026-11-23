@@ -3,8 +3,8 @@ set -eo pipefail
 
 readonly workspace=/workspace
 readonly package_source="${workspace}/src/ssc32_ros2_control"
-readonly coverage_lines_minimum=78
-readonly coverage_branches_minimum=59
+readonly coverage_lines_minimum=95
+readonly coverage_branches_minimum=75
 
 source_setup() {
   set +u
@@ -32,7 +32,8 @@ shellcheck \
   "${package_source}/.githooks/pre-commit" \
   "${package_source}/scripts/install_git_hooks.sh" \
   "${package_source}/scripts/quality_gate.sh" \
-  "${package_source}/scripts/quality_gate_inner.sh"
+  "${package_source}/scripts/quality_gate_inner.sh" \
+  "${package_source}/test/config_inspect_cli.sh"
 
 section 'GCC warnings-as-errors build and tests'
 export CC=gcc CXX=g++
@@ -130,6 +131,7 @@ gcovr \
   --print-summary \
   --fail-under-line "${coverage_lines_minimum}" \
   --fail-under-branch "${coverage_branches_minimum}" \
+  --txt \
   --xml "${workspace}/coverage.xml" \
   --xml-pretty
 

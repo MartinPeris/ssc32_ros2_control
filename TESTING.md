@@ -55,7 +55,7 @@ The versioned hook validates the exact staged Git tree in an isolated ROS 2
 Lyrical container. The gate checks clang-format and shell scripts; runs
 clang-tidy; builds with GCC and Clang warnings-as-errors; executes all unit,
 serial, lifecycle, diagnostics, and controller-manager tests; runs ASan/UBSan;
-and enforces production coverage floors of 78% lines and 59% branches. The
+and enforces production coverage floors of 95% lines and 75% branches. The
 Docker image and compiler cache are reused locally, while all source/build
 workspaces are disposable.
 
