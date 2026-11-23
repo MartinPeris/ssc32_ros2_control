@@ -14,7 +14,8 @@ constexpr std::string_view kPluginName = "ssc32_ros2_control/Ssc32System";
 
 std::string json_escape(const std::string_view value) {
   std::ostringstream output;
-  for (const unsigned char character : value) {
+  for (const char raw_character : value) {
+    const auto character = static_cast<unsigned char>(raw_character);
     switch (character) {
       case '"':
         output << "\\\"";

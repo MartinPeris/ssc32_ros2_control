@@ -60,14 +60,14 @@ TEST(Configuration, SelectsNamedHardwareAndRendersMachineReadableOutput) {
   auto parsed = resources();
   ASSERT_EQ(parsed.size(), 1U);
   auto second = parsed.front();
-  second.name = "second_board";
+  second.name = "second_board_アーム";
   second.hardware_parameters["device"] = "/dev/ttyUSB1";
   parsed.push_back(second);
 
   EXPECT_THROW(static_cast<void>(ssc32_ros2_control::inspect_hardware_resources(parsed)),
                std::invalid_argument);
   const auto configuration =
-      ssc32_ros2_control::inspect_hardware_resources(parsed, std::string("second_board"));
+      ssc32_ros2_control::inspect_hardware_resources(parsed, std::string("second_board_アーム"));
   EXPECT_EQ(configuration.device, "/dev/ttyUSB1");
 
   const auto text = ssc32_ros2_control::render_configuration_text(configuration);
@@ -75,7 +75,7 @@ TEST(Configuration, SelectsNamedHardwareAndRendersMachineReadableOutput) {
   EXPECT_NE(text.find("endpoint_pulses_us"), std::string::npos);
   const auto json = ssc32_ros2_control::render_configuration_json(configuration);
   EXPECT_NE(json.find("\"valid\": true"), std::string::npos);
-  EXPECT_NE(json.find("\"hardware\": \"second_board\""), std::string::npos);
+  EXPECT_NE(json.find("\"hardware\": \"second_board_アーム\""), std::string::npos);
   EXPECT_NE(json.find("\"pulse_at_position_max_us\""), std::string::npos);
 }
 
