@@ -55,9 +55,13 @@ The versioned hook validates the exact staged Git tree in an isolated ROS 2
 Lyrical container. The gate checks clang-format and shell scripts; runs
 clang-tidy; builds with GCC and Clang warnings-as-errors; executes all unit,
 serial, lifecycle, diagnostics, and controller-manager tests; runs ASan/UBSan;
-and enforces production coverage floors of 95% lines and 75% branches. The
-Docker image and compiler cache are reused locally, while all source/build
-workspaces are disposable.
+and enforces an exact committed production-coverage ratchet, currently above
+95% lines and 75% branches. Every commit must equal or improve both exact
+covered/total ratios. After a stable improvement, run
+`./scripts/quality_gate.sh --update-coverage-baseline` to adopt the measured
+result; the command refuses to lower either metric. The Docker image and
+compiler cache are reused locally, while all source/build workspaces are
+disposable.
 
 CI independently repeats the GCC, Clang, AddressSanitizer, and
 UndefinedBehaviorSanitizer matrix as a final repository-side safeguard.

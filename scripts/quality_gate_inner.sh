@@ -3,8 +3,6 @@ set -eo pipefail
 
 readonly workspace=/workspace
 readonly package_source="${workspace}/src/ssc32_ros2_control"
-readonly coverage_lines_minimum=95
-readonly coverage_branches_minimum=75
 
 source_setup() {
   set +u
@@ -19,6 +17,9 @@ cd "${workspace}"
 section() {
   printf '\n==> %s\n' "$1"
 }
+
+section 'Quality-harness unit tests'
+python3 "${package_source}/test/test_coverage_ratchet.py"
 
 section 'Formatting'
 mapfile -d '' formatted_sources < <(
@@ -129,10 +130,12 @@ gcovr \
   --exclude-unreachable-branches \
   --exclude-throw-branches \
   --print-summary \
-  --fail-under-line "${coverage_lines_minimum}" \
-  --fail-under-branch "${coverage_branches_minimum}" \
   --txt \
+  --json-summary "${workspace}/coverage-summary.json" \
   --xml "${workspace}/coverage.xml" \
   --xml-pretty
+python3 "${package_source}/scripts/coverage_ratchet.py" check \
+  "${package_source}/coverage-baseline.json" \
+  "${workspace}/coverage-summary.json"
 
 section 'Quality gate passed'
