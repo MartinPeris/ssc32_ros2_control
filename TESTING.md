@@ -44,15 +44,20 @@ controller processing, host load, and timeout policy add latency.
 
 ## Local Lyrical matrix
 
-Run the same gates as CI with the supplied container:
+Install the repository's pre-commit hook and run the complete gate manually:
 
 ```sh
-docker build -t ssc32-ros2-control-dev:lyrical -f docker/Dockerfile.lyrical .
-source /opt/ros/lyrical/setup.bash
-colcon build --packages-select-up-to ssc32_ros2_control
-colcon test --packages-select ssc32 ssc32_ros2_control
-colcon test-result --verbose
+./scripts/install_git_hooks.sh
+./scripts/quality_gate.sh
 ```
 
-CI repeats the suite with GCC, Clang, AddressSanitizer, and
-UndefinedBehaviorSanitizer.
+The versioned hook validates the exact staged Git tree in an isolated ROS 2
+Lyrical container. The gate checks clang-format and shell scripts; runs
+clang-tidy; builds with GCC and Clang warnings-as-errors; executes all unit,
+serial, lifecycle, diagnostics, and controller-manager tests; runs ASan/UBSan;
+and enforces production coverage floors of 78% lines and 59% branches. The
+Docker image and compiler cache are reused locally, while all source/build
+workspaces are disposable.
+
+CI independently repeats the GCC, Clang, AddressSanitizer, and
+UndefinedBehaviorSanitizer matrix as a final repository-side safeguard.

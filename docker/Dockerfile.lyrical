@@ -3,7 +3,12 @@ FROM ros:lyrical-ros-base
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       clang \
+      clang-format \
+      clang-tidy \
+      ccache \
+      gcovr \
       ros-lyrical-ament-cmake-gtest \
       ros-lyrical-ros2-control \
       ros-lyrical-ros2-controllers \
+      shellcheck \
     && rm -rf /var/lib/apt/lists/*

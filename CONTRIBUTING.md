@@ -5,11 +5,12 @@ Changes should include deterministic tests that do not require physical
 hardware. Hardware reports should state controller model and firmware, USB
 serial adapter, baud rate, ROS distribution, and the smallest safe reproduction.
 
-Run before submitting:
+Install the versioned Git hook once per clone:
 
 ```sh
-colcon build --packages-select-up-to ssc32_ros2_control \
-  --cmake-args -DSSC32_ROS2_CONTROL_WARNINGS_AS_ERRORS=ON
-colcon test --packages-select ssc32 ssc32_ros2_control
-colcon test-result --verbose
+./scripts/install_git_hooks.sh
 ```
+
+Every commit then runs the complete Dockerized quality gate against the exact
+staged snapshot. Run the same gate explicitly against current working-tree
+content with `./scripts/quality_gate.sh`.
