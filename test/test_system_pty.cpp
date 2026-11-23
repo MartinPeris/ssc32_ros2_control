@@ -133,7 +133,13 @@ TEST(SystemPtyIntegration, ExercisesLifecycleAndInterfaces) {
     require(system.read(rclcpp::Time(0), rclcpp::Duration(0, 20000000)) ==
                 hardware_interface::return_type::OK,
             "system read failed");
-    require(commands.front()->set_value(0.1), "failed to set command interface");
+    bool command_set = false;
+    for (const auto& command : commands) {
+      if (command->get_name() == "base_joint/position") {
+        command_set = command->set_value(0.1);
+      }
+    }
+    require(command_set, "failed to set base_joint/position command interface");
     require(system.write(rclcpp::Time(0), rclcpp::Duration(0, 20000000)) ==
                 hardware_interface::return_type::OK,
             "system write failed");
