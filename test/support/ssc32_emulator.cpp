@@ -97,6 +97,13 @@ bool Ssc32Emulator::wait_for_move_count(const std::size_t count,
                                      [this, count] { return move_commands_.size() >= count; });
 }
 
+bool Ssc32Emulator::wait_for_command_count(const std::size_t count,
+                                           const std::chrono::milliseconds timeout) const {
+  std::unique_lock<std::mutex> lock(mutex_);
+  return command_condition_.wait_for(lock, timeout,
+                                     [this, count] { return commands_.size() >= count; });
+}
+
 void Ssc32Emulator::set_response_delay(const std::chrono::milliseconds delay) {
   if (delay.count() < 0) {
     throw std::invalid_argument("response delay cannot be negative");
@@ -135,12 +142,13 @@ void Ssc32Emulator::handle_command(const std::string& command) {
     std::lock_guard<std::mutex> lock(mutex_);
     commands_.push_back(command);
   }
+  command_condition_.notify_all();
 
   if (command == "VER\r") {
     respond("SSC32-V2.03XE\r");
     return;
   }
-  if (command == "ESC\r") {
+  if (command == std::string{"\x1B\r", 2U}) {
     return;
   }
   if (command.rfind("QP", 0U) == 0U) {

@@ -85,7 +85,7 @@ if(BUILD_TESTING)
     ssc32_ros2_control_enable_warnings(ssc32_test_emulator)
 
     ament_add_gtest(test_pty test/test_pty.cpp)
-    target_link_libraries(test_pty ssc32_ros2_control)
+    target_link_libraries(test_pty ssc32_ros2_control ssc32_test_emulator)
     ssc32_ros2_control_enable_warnings(test_pty)
 
     ament_add_gtest(test_system_pty test/test_system_pty.cpp)

@@ -31,6 +31,8 @@ class Ssc32Emulator final {
   [[nodiscard]] std::string error() const;
   [[nodiscard]] bool wait_for_move_count(std::size_t count,
                                          std::chrono::milliseconds timeout) const;
+  [[nodiscard]] bool wait_for_command_count(std::size_t count,
+                                            std::chrono::milliseconds timeout) const;
 
   void set_response_delay(std::chrono::milliseconds delay);
   void fault_next_response(ResponseFault fault);
